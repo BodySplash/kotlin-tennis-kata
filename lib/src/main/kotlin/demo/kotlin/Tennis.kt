@@ -57,8 +57,6 @@ sealed class Score {
                     if (this == null) Deuce
                     else
                         Forty(p, this)
-
-
                 }
         }
 
