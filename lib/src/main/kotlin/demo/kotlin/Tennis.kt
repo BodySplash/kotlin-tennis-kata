@@ -5,18 +5,9 @@ enum class Point {
     Love, Fifteen, Thirty
 }
 
-
-fun nextPoint(v: Point) = when (v) {
-    Point.Love -> Point.Fifteen
-    Point.Fifteen -> Point.Thirty
-    else -> null
-}
-
-
 enum class Player {
-    ONE, TWO
+    One, Two
 }
-
 
 sealed class Score {
 
@@ -33,21 +24,16 @@ sealed class Score {
     companion object {
         private val start = Points(Point.Love, Point.Love)
 
-        private fun pointTo(winner: Player, next: Point, playerOne: Point, playerTwo: Point) = when (winner) {
-            Player.ONE -> Points(next, playerTwo)
-            Player.TWO -> Points(playerOne, next)
+        fun score(points: List<Player>) = points.fold(start, ::next)
+
+        private fun next(score: Score, player: Player) = when (score) {
+            is Advantage -> scoreAdvantage(score, player)
+            Deuce -> scoreDeuce(player)
+            is Forty -> scoreForty(score, player)
+            is Game -> score
+            is Points -> scoreWithPoints(player, score)
         }
 
-        private fun currentPointOf(player: Player, playerOne: Point, playerTwo: Point) =
-            when (player) {
-                Player.ONE -> playerOne
-                Player.TWO -> playerTwo
-            }
-
-        private fun otherPlayer(player: Player) = when (player) {
-            Player.ONE -> Player.TWO
-            Player.TWO -> Player.ONE
-        }
 
         private fun scoreWithPoints(winner: Player, score: Points): Score {
             val (playerOne, playerTwo) = score
@@ -56,6 +42,11 @@ sealed class Score {
                 else Forty(winner, currentPointOf(otherPlayer(winner), playerOne, playerTwo))
             }
 
+        }
+
+        private fun pointTo(winner: Player, next: Point, playerOne: Point, playerTwo: Point) = when (winner) {
+            Player.One -> Points(next, playerTwo)
+            Player.Two -> Points(playerOne, next)
         }
 
         private fun scoreForty(score: Forty, player: Player): Score {
@@ -73,19 +64,27 @@ sealed class Score {
 
         private fun scoreDeuce(player: Player) = Advantage(player)
 
+
         private fun scoreAdvantage(score: Advantage, player: Player) =
             if (score.player == player) Game(player) else Deuce
 
-
-        private fun next(score: Score, player: Player) = when (score) {
-            is Advantage -> scoreAdvantage(score, player)
-            Deuce -> scoreDeuce(player)
-            is Forty -> scoreForty(score, player)
-            is Game -> score
-            is Points -> scoreWithPoints(player, score)
-        }
-
-        fun score(points: List<Player>) = points.fold(start, ::next)
     }
 
+}
+
+private fun currentPointOf(player: Player, playerOne: Point, playerTwo: Point) =
+    when (player) {
+        Player.One -> playerOne
+        Player.Two -> playerTwo
+    }
+
+private fun nextPoint(v: Point) = when (v) {
+    Point.Love -> Point.Fifteen
+    Point.Fifteen -> Point.Thirty
+    else -> null
+}
+
+private fun otherPlayer(player: Player) = when (player) {
+    Player.One -> Player.Two
+    Player.Two -> Player.One
 }
